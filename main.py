@@ -1,6 +1,9 @@
 import math
 from tkinter import *
-from playsound import playsound
+
+import pystray
+from PIL import Image
+from pystray import MenuItem as item
 
 # ---------------------------- CONSTANTS ------------------------------- #
 PINK = "#e2979c"
@@ -8,9 +11,9 @@ RED = "#e7305b"
 GREEN = "#9bdeac"
 YELLOW = "#f7f5dd"
 FONT_NAME = "Courier"
-WORK = 25
-SHORT_BREAK = 5
-LONG_BREAK = 20
+WORK = 25 * 60
+SHORT_BREAK = 5 * 60
+LONG_BREAK = 20 * 60
 reps = 0
 CHECK_MARK = '✔'
 timer = None
@@ -54,23 +57,43 @@ def count_down(count):
         work_sessions = math.ceil(reps / 2 % 4)
         checks.config(text=work_sessions * CHECK_MARK)
         gui.state(newstate='normal')
-        gui.focus_force()
-        raise_above_all(gui)
+        raise_above_all()
         star_timer()
 
 
-# ---------------------------- UI SETUP ------------------------------- #
-def raise_above_all(window):
-    window.attributes('-topmost', 1)
-    window.attributes('-topmost', 0)
+# -------------------------- UI FUNCTIONS ------------------------------ #
+def raise_above_all():
+    gui.attributes('-topmost', 1)
+    gui.attributes('-topmost', 0)
 
+
+def quit_window():
+    icon.stop()
+    gui.destroy()
+
+
+def show_window():
+    icon.stop()
+    gui.after(0, gui.deiconify())
+
+
+def hide_window():
+    image = Image.open("Resources/depositphotos_188522596-stock-illustration-cooking-timer-mockup-realistic-style.jpg")
+    menu = (item("Quit", quit_window), item('Show', show_window))
+    icon = pystray.Icon('Pomodoro', image, "Pomodoro", menu)
+    icon.run()
+    gui.withdraw()
+
+
+# ---------------------------- UI SETUP ------------------------------- #
 gui = Tk()
 gui.title("Pomodoro")
 gui.config(width=408, height=348, padx=80, pady=30, bg=YELLOW)
+gui.protocol('WM_DEL_WINDOW', hide_window)
 
 
 canvas = Canvas(width=204, height=224, bg=YELLOW, highlightthickness=0)
-image = PhotoImage(file="tomato.png")
+image = PhotoImage(file="Resources/tomato.png")
 canvas.create_image(102, 112, image=image)
 timer_display = canvas.create_text(102, 130, text="00:00", font=(FONT_NAME, 36, "bold"), fill="white")
 
